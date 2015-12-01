@@ -1,0 +1,10 @@
+citEntry(
+  entry="article",	
+  title="Between-array normalization for 450K data",
+  author="Heiss, Jonathan A., and Hermann Brenner",
+  journal="Frontiers in genetics",
+  volume=6,
+  number=92,
+  year=2015,
+  textVersion="Heiss, Jonathan A., and Hermann Brenner: Between-array normalization for 450K data. Frontiers in genetics 6 (2015)."
+)
