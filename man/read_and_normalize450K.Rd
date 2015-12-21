@@ -34,10 +34,10 @@ dont_normalize450K(intensities)
  library(minfiData) ## this package includes some .idat files
  library(data.table)
 
- path <- system.file("extdata/",package="minfiData")
- samples = fread(paste0(path,'SampleSheet.csv'),integer64='character')
+ path <- system.file("extdata",package="minfiData")
+ samples = fread(file.path(path, 'SampleSheet.csv'),integer64='character')
 
- samples[,file:=paste0(path,Sentrix_ID,'/',Sentrix_ID,'_',Sentrix_Position)]
+ samples[,file:=file.path(path,Sentrix_ID,paste0(Sentrix_ID,'_',Sentrix_Position))]
  ## samples$file is a character vector containing the location of the
  ## .idat files, but without the suffixes "_Red.idat" or "_Grn.idat"
 
