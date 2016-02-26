@@ -7,7 +7,8 @@ read450K <- function(idat_files){
     sample_names = strsplit(x=idat_files,split='/')
     sample_names = sapply(sample_names,tail,n=1L)
 
-    M = U = matrix(NA_real_,nrow=nrow(hm450),ncol=J) #methylated (M) and unmethylated (U) signal intensities
+    M = U = matrix(NA_real_   ,nrow=nrow(hm450),ncol=J) #methylated (M) and unmethylated (U) signal intensities
+    N = V = matrix(NA_integer_,nrow=nrow(hm450),ncol=J) #number of beads underlying methylated (N) and unmethylated (V) signal intensities
     ctrlGrn = ctrlRed = matrix(NA_real_,nrow=nrow(hm450.controls),ncol=J) # signal intensities of control probes
 
     ### indices of probes by probe type and color channel
@@ -17,34 +18,58 @@ read450K <- function(idat_files){
 
     ### read the intensities of the green channel
     for(j in 1:J){
-        means = readIDAT(paste0(idat_files[j],'_Grn.idat'))$Quants[,'Mean']
-        M[i1g$index,j] = means[i1g$Mi]
-        U[i1g$index,j] = means[i1g$Ui]
-        M[i2$index ,j] = means[i2$Mi ]
+        tmp = readIDAT(paste0(idat_files[j],'_Grn.idat'))$Quants
+        means  = tmp[,'Mean']
+        nbeads = tmp[,'NBeads']
+        
+        M[i1g$index,j] = means [i1g$Mi]
+        N[i1g$index,j] = nbeads[i1g$Mi]
+        
+        U[i1g$index,j] = means [i1g$Ui]
+        V[i1g$index,j] = nbeads[i1g$Ui]
+
+        M[i2$index ,j] = means [ i2$Mi]
+        N[i2$index ,j] = nbeads[ i2$Mi]
+
         ctrlGrn[,j]    = means[hm450.controls$i]
     }
 
     ### the red channel
     for(j in 1:J){
-        means = readIDAT(paste0(idat_files[j],'_Red.idat'))$Quants[,'Mean']
-        M[i1r$index,j] = means[i1r$Mi]
-        U[i1r$index,j] = means[i1r$Ui]
-        U[i2$index ,j] = means[i2$Ui ]
+        tmp = readIDAT(paste0(idat_files[j],'_Red.idat'))$Quants
+        means  = tmp[,'Mean']
+        nbeads = tmp[,'NBeads']
+
+        M[i1r$index,j] = means [i1r$Mi]
+        N[i1r$index,j] = nbeads[i1r$Mi]
+
+        U[i1r$index,j] = means [i1r$Ui]
+        V[i1r$index,j] = nbeads[i1r$Ui]
+
+        U[i2$index ,j] = means [ i2$Ui]
+        V[i2$index ,j] = nbeads[ i2$Ui]
+
         ctrlRed[,j]    = means[hm450.controls$i]
     }
 
-    intensities = list(M=M,U=U,ctrlGrn=ctrlGrn,ctrlRed=ctrlRed,sample_names=sample_names)
+    intensities = list(M=M,U=U,N=N,V=V,ctrlGrn=ctrlGrn,ctrlRed=ctrlRed,sample_names=sample_names)
     return(intensities)
 }
 
+
 dont_normalize450K <- function(intensities){
 
-    if(!all(names(intensities)==c('M','U','ctrlGrn','ctrlRed','sample_names'))) stop('Invalid argument')
+    if(!all(names(intensities)==c('M','U','N','V','ctrlGrn','ctrlRed','sample_names'))) stop('Invalid argument')
 
     with(intensities,{
+        M[N==0] = NA
+        U[V==0] = NA
+
         M[M<1] = 1
         U[U<1] = 1
+        
         meth = M/(M+U)
+        
         rownames(meth) = hm450$probe_id
         colnames(meth) = sample_names
         meth = ExpressionSet(assayData=meth)
@@ -54,7 +79,7 @@ dont_normalize450K <- function(intensities){
 
 normalize450K <- function(intensities){
 
-    if(!all(names(intensities)==c('M','U','ctrlGrn','ctrlRed','sample_names'))) stop('Invalid argument')
+    if(!all(names(intensities)==c('M','U','N','V','ctrlGrn','ctrlRed','sample_names'))) stop('Invalid argument')
 
     with(intensities,{
         J = ncol(M)
@@ -79,6 +104,9 @@ normalize450K <- function(intensities){
         M[i,] = t(t(M[i,]) * A2T)
         U[i,] = t(t(U[i,]) * A2T)
 
+        M[N==0] = NA
+        U[V==0] = NA
+
         M[M<1] = 1
         U[U<1] = 1
 
@@ -89,16 +117,20 @@ normalize450K <- function(intensities){
         rm(hk)
 
         ### compute the reference values
-        rmg = log(rowMedians(M[hk_1g,]))
-        rug = log(rowMedians(U[hk_1g,]))
-        rmr = log(rowMedians(M[hk_1r,]))
-        rur = log(rowMedians(U[hk_1r,]))
+        rmg = log(rowMedians(M[hk_1g,],na.rm=TRUE))
+        rug = log(rowMedians(U[hk_1g,],na.rm=TRUE))
+        rmr = log(rowMedians(M[hk_1r,],na.rm=TRUE))
+        rur = log(rowMedians(U[hk_1r,],na.rm=TRUE))
 
         ### correct intensity-dependent bias
         for(j in 1:J){
             # green channel
             x = log(c(M[hk_1g,j],U[hk_1g,j]))
             y = x-c(rmg,rug)
+
+            omit = !is.na(y)
+            x = x[omit]
+            y = y[omit]
 
             f = loess(y~x,span=.2,degree=1,family='symmetric')
 
@@ -109,6 +141,10 @@ normalize450K <- function(intensities){
             # red channel
             x = log(c(M[hk_1r,j],U[hk_1r,j]))
             y = x-c(rmr,rur)
+
+            omit = !is.na(y)
+            x = x[omit]
+            y = y[omit]
 
             f = loess(y~x,span=.2,degree=1,family='symmetric')
 
@@ -126,6 +162,10 @@ normalize450K <- function(intensities){
         for(j in 1:J){
             x = meth[hk_2,j]
             y = x - rb
+
+            omit = !is.na(y)
+            x = x[omit]
+            y = y[omit]
 
             f = loess(y~x,span=.2,family='symmetric',degree=1)
             x = meth[i2$index,j]
