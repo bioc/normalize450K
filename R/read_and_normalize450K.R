@@ -77,7 +77,7 @@ dont_normalize450K <- function(intensities){
     })
 }
 
-normalize450K <- function(intensities){
+normalize450K <- function(intensities,tissue=''){
 
     if(!all(names(intensities)==c('M','U','N','V','ctrlGrn','ctrlRed','sample_names'))) stop('Invalid argument')
 
@@ -89,6 +89,7 @@ normalize450K <- function(intensities){
         i1r = hm450[hm450$channel=='Red' ,]
         i2  = hm450[hm450$channel=='Both',]
 
+        cat('[Correcting dye bias]\n')
         ### here I use the extension control probes
         A2C = ctrlRed[7,]/ctrlGrn[9,]
         i = i1g$index
@@ -110,22 +111,29 @@ normalize450K <- function(intensities){
         M[M<1] = 1
         U[U<1] = 1
 
-        hk = hm450[hm450$probe_id%in%hk,]
-        hk_1g = hk[hk$channel=='Grn' ,]$index
-        hk_1r = hk[hk$channel=='Red' ,]$index
-        hk_2  = hk[hk$channel=='Both',]$index
-        rm(hk)
+        hk_1g = hk[hk$channel=='Grn' ,]
+        hk_1r = hk[hk$channel=='Red' ,]
+        hk_2  = hk[hk$channel=='Both',]
 
+        cat('[Correcting intensity-dependent bias]\n')
+        pb <- txtProgressBar(min=0,max=J,style=3)
         ### compute the reference values
-        rmg = log(rowMedians(M[hk_1g,],na.rm=TRUE))
-        rug = log(rowMedians(U[hk_1g,],na.rm=TRUE))
-        rmr = log(rowMedians(M[hk_1r,],na.rm=TRUE))
-        rur = log(rowMedians(U[hk_1r,],na.rm=TRUE))
+        if(tissue=='Blood'){
+            rmg = hk_1g$mref
+            rug = hk_1g$uref
+            rmr = hk_1r$mref
+            rur = hk_1r$uref
+        }else{
+            rmg = log(rowMedians(M[hk_1g$index,],na.rm=TRUE))
+            rug = log(rowMedians(U[hk_1g$index,],na.rm=TRUE))
+            rmr = log(rowMedians(M[hk_1r$index,],na.rm=TRUE))
+            rur = log(rowMedians(U[hk_1r$index,],na.rm=TRUE))
+        }
 
         ### correct intensity-dependent bias
         for(j in 1:J){
             # green channel
-            x = log(c(M[hk_1g,j],U[hk_1g,j]))
+            x = log(c(M[hk_1g$index,j],U[hk_1g$index,j]))
             y = x-c(rmg,rug)
 
             omit = !is.na(y)
@@ -139,7 +147,7 @@ normalize450K <- function(intensities){
             x = M[ i2$index,j]; x = x * exp(-predict(f,log(x))); M[ i2$index,j] <- ifelse(is.na(x),M[ i2$index,j],x)
 
             # red channel
-            x = log(c(M[hk_1r,j],U[hk_1r,j]))
+            x = log(c(M[hk_1r$index,j],U[hk_1r$index,j]))
             y = x-c(rmr,rur)
 
             omit = !is.na(y)
@@ -151,16 +159,25 @@ normalize450K <- function(intensities){
             x = M[i1r$index,j]; x = x * exp(-predict(f,log(x))); M[i1r$index,j] <- ifelse(is.na(x),M[i1r$index,j],x)
             x = U[i1r$index,j]; x = x * exp(-predict(f,log(x))); U[i1r$index,j] <- ifelse(is.na(x),U[i1r$index,j],x)
             x = U[ i2$index,j]; x = x * exp(-predict(f,log(x))); U[ i2$index,j] <- ifelse(is.na(x),U[ i2$index,j],x)
+            setTxtProgressBar(pb, j)
         }
+        close(pb)
 
         meth = log(M/U)
         rm(M,U,rmg,rmr,rug,rur)
 
         ### correct methylation-dependent bias
-        rb = rowMedians(meth[hk_2,],na.rm=TRUE)
+        cat('[Correcting methylation-dependent bias]\n')
+        pb <- txtProgressBar(min=0,max=J,style=3)
+
+        if(tissue=='Blood'){
+            rb = hk_2$mref
+        }else{
+            rb = rowMedians(meth[hk_2$index,],na.rm=TRUE)
+        }
 
         for(j in 1:J){
-            x = meth[hk_2,j]
+            x = meth[hk_2$index,j]
             y = x - rb
 
             omit = !is.na(y)
@@ -171,10 +188,12 @@ normalize450K <- function(intensities){
             x = meth[i2$index,j]
             x = x - predict(f,x)
             meth[i2$index,j] <- ifelse(is.na(x),meth[i2$index,j],x)
+            setTxtProgressBar(pb,j)
         }
 
+        close(pb)
         rm(rb)
-
+   
         meth = exp(meth)
         meth = meth/(meth+1)
 

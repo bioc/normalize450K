@@ -11,7 +11,7 @@ Normalization of 450K data by LOESS method
 }
 \usage{
 read450K(idat_files)
-normalize450K(intensities)
+normalize450K(intensities,tissue='')
 dont_normalize450K(intensities)
 }
 
@@ -22,12 +22,15 @@ dont_normalize450K(intensities)
     \item{intensities}{
         List object containing raw signal intensities. Result of calling \code{read450K}.
     }
+    \item{tissue}{
+        If set to 'Blood', a set of prespecified reference values are used for normalization and cell proportions of granulocytes, lymphocytes and monocytes are estimated.
+    }
 }
 \details{
     Function \code{read450K} reads .idat files and returns a list object containing raw signal intensities. \code{dont_normalize450K} returns an ExpressionSet containing beta-values without normalization. \code{normalize450K} performs dye bias correction using the extension controls probes followed by normalization by local regression (Heiss and Brenner, 2015) and returns an ExpressionSet containing beta-values, too.
 }
 \value{
-    \item{}{For \code{read450K} a list containing the methylated, unmethylated and control signal intensities. For \code{dont_normalize450K} and \code{normalize450K} an ExpressionSet containing beta-values, rows corresponding to CpG sites (named) and columns to samples (in the same order as 'idat_files').}
+    For \code{read450K} a list containing the methylated, unmethylated and control signal intensities. For \code{dont_normalize450K} and \code{normalize450K} an ExpressionSet containing beta-values, rows corresponding to CpG sites (named) and columns to samples (in the same order as 'idat_files').
 }
 
 \examples{

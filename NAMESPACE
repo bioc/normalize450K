@@ -1,5 +1,7 @@
 import(Biobase)
 import(illuminaio)
+import(quadprog)
 export(read450K)
 export(normalize450K)
 export(dont_normalize450K)
+export(estimateLC)
