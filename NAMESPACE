@@ -1,6 +1,7 @@
 import(Biobase)
 import(illuminaio)
 import(quadprog)
+importFrom("utils", "tail")
 export(read450K)
 export(normalize450K)
 export(dont_normalize450K)
