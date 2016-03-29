@@ -1,11 +1,11 @@
-estimateLC <- function(meth){
+estimateLC <- function(eSet){
     
-    J = ncol(meth)
+    J = ncol(eSet)
 
     ### model trained on Reinius dataset
     markers = match(rownames(coefs_reinius),hm450$probe_id)
     EST = sapply(1:J,function(j){
-        tmp = exprs(meth[markers,j])
+        tmp = exprs(eSet[markers,j])
         i = !is.na(tmp)
         solve.QP(
              t(coefs_reinius[i,]) %*% coefs_reinius[i,]
@@ -23,7 +23,7 @@ estimateLC <- function(meth){
     ### model trained on whole blood samples (LOLIPOP study)
     markers = match(rownames(coefs_lolipop),hm450$probe_id)
     EST2 = sapply(1:J,function(j){
-        tmp = exprs(meth[markers,j])
+        tmp = exprs(eSet[markers,j])
         i = !is.na(tmp)
         solve.QP(
              t(coefs_lolipop[i,]) %*% coefs_lolipop[i,]
@@ -38,7 +38,7 @@ estimateLC <- function(meth){
     EST2 = data.frame(EST2)
 
 
-    pData(meth) = cbind(pData(meth),EST,EST2)
+    pData(eSet) = cbind(pData(eSet),EST,EST2)
     
-    return(meth)
+    return(eSet)
 }
