@@ -23,7 +23,7 @@ dont_normalize450K(intensities)
         List object containing raw signal intensities. Result of calling \code{read450K}.
     }
     \item{tissue}{
-        If set to 'Blood', a set of prespecified reference values are used for normalization and cell proportions of granulocytes, lymphocytes and monocytes are estimated.
+        If set to 'Blood', a set of prespecified reference values are used for normalization. This is recommended if you plan to use \code{estimateLC}.
     }
 }
 \details{
@@ -34,6 +34,7 @@ dont_normalize450K(intensities)
 }
 
 \examples{
+\dontrun{
  library(minfiData) ## this package includes some .idat files
  library(data.table)
 
@@ -48,7 +49,7 @@ dont_normalize450K(intensities)
  none = dont_normalize450K(raw) ## no normalization
  norm = normalize450K(raw)
 }
-
+}
 \author{
     Jonathan A. Heiss
 }

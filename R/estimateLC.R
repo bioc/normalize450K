@@ -16,7 +16,7 @@ estimateLC <- function(eSet){
         )$sol
         })
     EST = t(EST)
-    colnames(EST) = c('NK','MO','CD4','CD8','B','GR')
+    colnames(EST) = colnames(coefs_reinius)
     EST = data.frame(EST)
 
 
@@ -34,7 +34,7 @@ estimateLC <- function(eSet){
         )$sol
         })
     EST2 = t(EST2)
-    colnames(EST2) = c('NE2','EO2','BA2','LY2','MO2')
+    colnames(EST2) = paste0(colnames(coefs_lolipop),'2')
     EST2 = data.frame(EST2)
 
 

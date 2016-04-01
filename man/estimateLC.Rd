@@ -17,7 +17,7 @@ estimateLC(eSet)
     }
 }
 \details{
-    This is an experimental feature. Cell proportions are estimated using the algorithm developed by Houseman et al. (2012) by two different models. The first model was trained on a dataset of purified leukocytes (Reinius et al., 2012) and provides predictions for six cell types (granulocytes, monocytes, CD8+ T cells, CD4+ T cells, natural killer cells and CD19+ B cells), the second model was trained on whole blood samples from the LOLIPOP study and provides predictions for 4 cell types (neutrophils, eosinophils, lymphocytes, monocytes -- ignore the prediction for basophils). Use this function only for normalized data.
+    This is an experimental feature. Cell proportions are estimated using the algorithm developed by Houseman et al. (2012) by two different models. The first model was trained on a dataset of purified leukocytes (Reinius et al., 2012) and provides predictions for six cell types (granulocytes, monocytes, CD8+ T cells, CD4+ T cells, natural killer cells and CD19+ B cells), the second model was trained on whole blood samples from the LOLIPOP study and provides predictions for 4 cell types (neutrophils, eosinophils, lymphocytes, monocytes -- ignore the prediction for basophils). Use this function only for normalized data (with \code{normalize450K(...,tissue='Blood')}.
 }
 \value{
     Returns the eSet object with cell proportions estimates added to the phenoData slot.

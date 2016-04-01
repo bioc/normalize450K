@@ -14,7 +14,7 @@
 
 This package provides functions to read and normalize data from Illumina Infinium HumanMethylaton450 BeadChips. As input only IDAT files are supported.
 
-<<results=hide>>=
+<<eval=FALSE>>=
  library(normalize450K)
  library(minfiData) ## this package includes some .idat files
  library(data.table)
