@@ -59,5 +59,5 @@ dont_normalize450K(intensities)
 }
 
 \references{
-    Heiss, Jonathan A., and Hermann Brenner. \emph{Between-array normalization for 450K data}. Frontiers in genetics 6 (2015). doi:\href{http://dx.doi.org/10.3389/fgene.2015.00092}{10.3389/fgene.2015.00092}
+    Heiss JA, Brenner H (2015). Between-array normalization for 450K data. Frontiers in Genetics, doi:\href{http://dx.doi.org/10.3389/fgene.2015.00092}{10.3389/fgene.2015.00092}
 }

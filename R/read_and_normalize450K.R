@@ -16,6 +16,8 @@ read450K <- function(idat_files){
     i1r = hm450[hm450$channel=='Red' ,]
     i2  = hm450[hm450$channel=='Both',]
 
+    pb <- txtProgressBar(min=0,max=2*J,style=3)
+
     ### read the intensities of the green channel
     for(j in 1:J){
         tmp = readIDAT(paste0(idat_files[j],'_Grn.idat'))$Quants
@@ -32,6 +34,7 @@ read450K <- function(idat_files){
         N[i2$index ,j] = nbeads[ i2$Mi]
 
         ctrlGrn[,j]    = means[hm450.controls$i]
+        setTxtProgressBar(pb, j)
     }
 
     ### the red channel
@@ -50,7 +53,10 @@ read450K <- function(idat_files){
         V[i2$index ,j] = nbeads[ i2$Ui]
 
         ctrlRed[,j]    = means[hm450.controls$i]
+        setTxtProgressBar(pb, j+J)
     }
+
+    close(pb)
 
     intensities = list(M=M,U=U,N=N,V=V,ctrlGrn=ctrlGrn,ctrlRed=ctrlRed,sample_names=sample_names)
     return(intensities)
