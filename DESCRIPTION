@@ -1,7 +1,7 @@
 Package: normalize450K
 Type: Package
 Title: Preprocessing of Illumina Infinium 450K data
-Version: 1.4.0
+Version: 1.5.0
 Date: 2016-11-29
 Author: Jonathan Alexander Heiss
 Maintainer: Jonathan Alexander Heiss <jonathan.heiss@posteo.de>
